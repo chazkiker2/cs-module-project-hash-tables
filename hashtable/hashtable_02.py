@@ -7,29 +7,19 @@ class HashTableEntry:
         self.next = None
 
 
-# Hash table can't have fewer than this many slots
 MIN_CAPACITY = 8
+FNV_offset_basis_64 = 5381
+FNV_prime_64 = 33
 
 
-# Hash Tables are essentially like dictionaries.
-# Every entry has a key:value, but like a LinkedList, each entry has a next
-#
-# HashTables are much faster thank LinkedList b/c it's not anything like a list.
-# Entries are accessed by way of a key!!
-#
-# Keys are like dictionaries: look up the word you want and you'll get the definition.
-
-# DAY 3
-# Caesar Ciphers
 class HashTable:
     """A hash table that with `capacity` buckets
     that accepts string keys"""
 
     def __init__(self, capacity):
-        # max number of item_count this HashTable can hold
         self.capacity = capacity if capacity >= MIN_CAPACITY else MIN_CAPACITY
-        self.storage = [None] * capacity  # bucket to store item_count in
-        self.items = 0  # track number of item_count in storage
+        self.storage = [None] * capacity  # bucket to store items in
+        self.item_count = 0  # track number of item_count in storage
 
     def get_num_slots(self):
         """Return the length of the list you're using to hold the hash
@@ -43,42 +33,44 @@ class HashTable:
     def get_load_factor(self):
         """Return the load factor for this hash table."""
 
-        return self.items / self.capacity  # how quickly our hashtable will load
+        return self.item_count / self.capacity  # how quickly our hashtable will load
 
-    def fnv1(self, key):
-        """FNV-1 Hash, 64-bit
+    @staticmethod
+    def fnv1(key):
+        """FNV-1 Hash, 64-bit"""
 
-        Implement this, and DJB2."""
-
-        fnv_offset_basis = 14695981039346656037
         fnv_prime = 1099511628211
-        hash_value = fnv_offset_basis
+        fnv_offset = 14695981039346656037
         for byte in key:
-            hash_value *= fnv_prime  # multiply hash by FNV_prime
-            hash_value ^= ord(byte)  # bitwise XOR
+            fnv_offset *= fnv_prime  # multiply hash by FNV_prime
+            fnv_offset ^= ord(byte)  # bitwise XOR
 
-        return hash_value
+        return fnv_offset
 
-    def djb2(self, key):
-        """DJB2 hash, 32-bit
+    @staticmethod
+    def djb2(key):
+        """DJB2 hash, 32-bit"""
 
-        Implement this, and FNV-1."""
+        str_key = str(key).encode()
+        hash_ = FNV_offset_basis_64
 
-        hash_prime = 5381
+        for byte in str_key:
+            hash_ *= FNV_prime_64
+            hash_ ^= byte
+            hash_ &= 0xffffffffffffffff  # 64-bit hash
 
-        for byte in key:
-            hash_prime = (hash_prime * 33) + ord(byte)
+        return hash_
+        # hash_prime = 5381
+        # for byte in key:
+        #     hash_prime = (hash_prime * 33) + ord(byte)
+        #
+        # return hash_prime
 
-        return hash_prime
-
-    def hash_index(self, key):
+    def hash_index(self, key) -> int:
         """Take an arbitrary key and return a valid integer index
         between within the storage capacity of the hash table."""
 
         # return self.fnv1(key) % self.capacity
-
-        # this will cap out the returned value at the
-        # table's capacity (hash will not be larger than capacity)
         return self.djb2(key) % self.capacity
 
     def put(self, key, value):
@@ -87,8 +79,24 @@ class HashTable:
         Hash collisions should be handled with Linked List Chaining."""
 
         index = self.hash_index(key)
-        self.storage[index] = HashTableEntry(index, value)
-        self.items += 1
+
+        current_entry = self.storage[index]
+
+        while current_entry is not None and current_entry.key != key:
+            current_entry = current_entry.next
+
+        if current_entry is not None:
+            current_entry.value = value
+
+        else:
+            new_entry = HashTableEntry(key, value)
+            new_entry.next = self.storage[index]
+            self.storage[index] = new_entry
+
+            self.item_count += 1
+
+            if self.get_load_factor() > 0.7:
+                self.resize(self.capacity * 2)
 
     def delete(self, key):
         """Remove the value stored with the given key.
@@ -101,7 +109,7 @@ class HashTable:
 
         else:
             self.storage[index] = None
-            self.items -= 1
+            self.item_count -= 1
 
     def get(self, key):
         """Retrieve the value stored with the given key.
@@ -109,21 +117,29 @@ class HashTable:
         Returns None if the key is not found."""
 
         index = self.hash_index(key)
+        # if self.storage[index]:
+        #     return self.storage[index].value
+        # else:
 
-        return self.storage[index] if self.storage[index] else None
+        return self.storage[index].value if self.storage[index] is not None else None
 
     def resize(self, new_capacity):
         """Changes the capacity of the hash table and
         rehashes all key/value pairs."""
 
         # This does not currently handle collisions, and thus would not really work
+        old_storage = self.storage
         self.capacity = new_capacity
-        old_table = self.storage
         self.storage = [None] * self.capacity  # storage is new sequence of empty buckets
+        old_item_count = self.item_count
 
-        for element in old_table:
-            if element is not None:
-                self.put(element.key, element.value)
+        for bucket_item in old_storage:
+            current_entry = bucket_item
+            if current_entry is not None:
+                self.put(current_entry.key, current_entry.value)
+                current_entry = current_entry.next
+
+        self.item_count = old_item_count
 
 
 if __name__ == "__main__":

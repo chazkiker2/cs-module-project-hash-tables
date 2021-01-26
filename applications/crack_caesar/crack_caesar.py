@@ -5,7 +5,7 @@
 from collections import Counter
 
 
-def caesar_cipher_old():
+def caesar_cipher():
     most_freq_letters = ['E', 'T', 'A', 'O', 'H', 'N', 'R', 'I', 'S', 'D', 'L', 'W', 'U',
                          'G', 'F', 'B', 'M', 'Y', 'C', 'P', 'K', 'V', 'Q', 'J', 'X', 'Z']
 

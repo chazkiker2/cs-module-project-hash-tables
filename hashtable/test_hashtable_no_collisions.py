@@ -6,7 +6,9 @@ Does not collide with DJB2 or FNV-1-64. But could collide with other hashes.
 """
 
 import unittest
-from hashtable import HashTable
+# from hashtable import HashTable
+from hashtable_02 import HashTable
+
 
 class TestHashTable(unittest.TestCase):
 
@@ -66,6 +68,7 @@ class TestHashTable(unittest.TestCase):
         self.assertTrue(return_value is None)
         return_value = ht.get("key-2")
         self.assertTrue(return_value is None)
+
 
 if __name__ == '__main__':
     unittest.main()
