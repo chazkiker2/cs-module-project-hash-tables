@@ -40,7 +40,7 @@ def caesar_cipher():
             new_letter = most_freq_letters[index]
             story += new_letter
 
-        print(story)
+        return story
 
 
 def caesar_cipher_new():
@@ -48,29 +48,20 @@ def caesar_cipher_new():
                          'G', 'F', 'B', 'M', 'Y', 'C', 'P', 'K', 'V', 'Q', 'J', 'X', 'Z']
 
     with open("./ciphertext.txt", "r") as file_output:
-        letters = [letter for letter in file_output.read()]
-        letter_counter = Counter([letter for letter in letters if letter in most_freq_letters])
-        common_letters = letter_counter.most_common()
-        print(common_letters)
-
-        # ordered_freq = [letter for letter in letter_counter]
-        #
-        # def sorter(letter):
-        #     return letter_counter[letter]
-        #
-        # # https://docs.python.org/3/howto/sorting.html FOR FUN!
-        # ordered_freq.sort(key=sorter, reverse=True)
+        all_letters = [letter for letter in file_output.read()]
+        alpha_count = Counter([letter for letter in all_letters if letter in most_freq_letters])
+        alphas_by_freq = [letter for (letter, count) in alpha_count.most_common()]
 
         story = ""
-        for letter in letters:
-            if letter not in common_letters:
+        for letter in all_letters:
+            if letter not in alphas_by_freq:
                 story += letter
-                continue
-            index = common_letters.index(letter)
-            new_letter = most_freq_letters[index]
-            story += new_letter
+            else:
+                story += most_freq_letters[alphas_by_freq.index(letter)]
 
-        print(story)
+        return story
 
 
-caesar_cipher_new()
+# print(caesar_cipher())
+# print(caesar_cipher_new())
+# print(caesar_cipher() == caesar_cipher_new())
