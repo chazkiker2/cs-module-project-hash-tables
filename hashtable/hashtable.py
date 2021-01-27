@@ -19,8 +19,7 @@ MIN_CAPACITY = 8
 #
 # Keys are like dictionaries: look up the word you want and you'll get the definition.
 
-# DAY 3
-# Caesar Ciphers
+
 class HashTable:
     """A hash table that with `capacity` buckets
     that accepts string keys"""
@@ -81,36 +80,110 @@ class HashTable:
         # table's capacity (hash will not be larger than capacity)
         return self.djb2(key) % self.capacity
 
+    # TODO
     def put(self, key, value):
         """Store the value with the given key.
-
         Hash collisions should be handled with Linked List Chaining."""
 
-        index = self.hash_index(key)
-        self.storage[index] = HashTableEntry(index, value)
-        self.items += 1
+        # DAY 1 — DOES NOT HANDLE COLLISIONS
+        # index = self.hash_index(key)
+        # self.storage[index] = HashTableEntry(index, value)
+        # self.items += 1
 
+        # DAY 2
+        index = self.hash_index(key)
+        new_entry = HashTableEntry(key, value)
+        if self.storage[index] is not None:  # something is stored at index
+            if self.storage[index].key == key:  # if entry at key has same key
+                self.storage[index] = new_entry  # over-write with new entry
+            else:
+                current_entry = self.storage[index]
+                while current_entry is not None:
+                    if current_entry.key == key:
+                        current_entry.value = value
+
+                    current_entry = current_entry.next
+
+        else:  # nothing is stored at index
+            self.storage[index] = new_entry  # store new entry at index
+            self.items += 1  # increase item count
+
+        if self.get_load_factor() >= 0.7:
+            self.resize(self.capacity * 2)
+
+    # TODO
     def delete(self, key):
         """Remove the value stored with the given key.
 
         Print a warning if the key is not found."""
 
-        index = self.hash_index(key)
-        if not self.storage[index]:
-            print("No such key exists in table")
+        # DAY 1
+        # index = self.hash_index(key)
+        # if not self.storage[index]:
+        #     print("No such key exists in table")
+        #
+        # else:
+        #     self.storage[index] = None
+        #     self.items -= 1
 
-        else:
-            self.storage[index] = None
+        # DAY 2
+        index = self.hash_index(key)
+        if self.storage[index] is None:  # nothing at index
+            print("No such key exists in table")
+            return None  # no such key
+
+        elif self.storage[index].key == key:  # item to delete present
             self.items -= 1
 
+            if self.storage[index].next is not None:  # if we're not at tail
+                self.storage[index] = self.storage[index].next  # shift over (effectively deleting)
+
+            else:
+                self.storage[index] = None  # assign current location to None
+
+
+        else:
+            prev = self.storage[index]
+            current = prev.next
+            while current is not None:
+                if current.key == key:
+                    prev.next = current.next
+                    self.items -= 1
+                else:
+                    prev = current
+                    current = current.next
+
+            return "Nothing here"
+
+    # TODO
     def get(self, key):
         """Retrieve the value stored with the given key.
 
         Returns None if the key is not found."""
 
-        index = self.hash_index(key)
+        # DAY 1
+        # index = self.hash_index(key)
+        #
+        # return self.storage[index] if self.storage[index] else None
 
-        return self.storage[index] if self.storage[index] else None
+        # DAY 2
+        index = self.hash_index(key)
+        if self.storage[index] is None:  # nothing at index
+            return None
+
+        elif self.storage[index].key == key:  # element at key is the element to get
+            return self.storage[index].value
+
+        else:
+            current = self.storage[index]
+            while current.next is not None:
+                if current.next.key == key:
+                    return current.next.value
+                else:
+                    current = current.next
+
+            # reach this line, we've iterated through all — element to find is not present
+            return None
 
     def resize(self, new_capacity):
         """Changes the capacity of the hash table and

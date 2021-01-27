@@ -1,7 +1,9 @@
 import unittest
 
-# from hashtable import HashTable
-from hashtable_02 import HashTable
+from hashtable import HashTable
+
+
+# from hashtable_02 import HashTable
 
 
 class TestHashTable(unittest.TestCase):
@@ -159,6 +161,7 @@ class TestHashTable(unittest.TestCase):
         self.assertTrue(return_value is None)
         return_value = ht.get("key-9")
         self.assertTrue(return_value is None)
+
 
 if __name__ == '__main__':
     unittest.main()

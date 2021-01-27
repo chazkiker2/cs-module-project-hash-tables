@@ -6,8 +6,10 @@ Does not collide with DJB2 or FNV-1-64. But could collide with other hashes.
 """
 
 import unittest
-# from hashtable import HashTable
-from hashtable_02 import HashTable
+from hashtable import HashTable
+
+
+# from hashtable_02 import HashTable
 
 
 class TestHashTable(unittest.TestCase):
